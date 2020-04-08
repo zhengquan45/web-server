@@ -1,0 +1,85 @@
+package org.zhq.core.servlet.context;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.zhq.core.context.Context;
+import org.zhq.core.cookie.Cookie;
+import org.zhq.core.response.Response;
+import org.zhq.core.servlet.base.HttpServlet;
+import org.zhq.core.session.HttpSession;
+import org.zhq.core.util.XMLUtil;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.zhq.core.context.Context.JSESSIONID;
+
+public class ServletContext {
+
+    private Map<String, HttpServlet> servletMap;
+    private Map<String, String> mapping;
+    private Map<String, Object> attributes;
+    private Map<String, HttpSession> sessions;
+    private static ServletContext INSTANCE = new ServletContext();
+    private ServletContext() {
+        init();
+    }
+
+    public static ServletContext getInstance(){
+        return INSTANCE;
+    }
+
+    private void init() {
+        servletMap = new HashMap<>();
+        mapping = new HashMap<>();
+        attributes = new ConcurrentHashMap<>();
+        sessions = new ConcurrentHashMap<>();
+        Document document = XMLUtil.getDocument(ServletContext.class.getResource("/WEB-INF/web.xml").getFile());
+        Element root = document.getRootElement();
+        List<Element> servlets = root.elements("servlet");
+        for (Element servlet : servlets) {
+            String key = servlet.element("servlet-name").getText();
+            String value = servlet.element("servlet-class").getText();
+            HttpServlet httpServlet = null;
+            try {
+                httpServlet = (HttpServlet) Class.forName(value).newInstance();
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                e.printStackTrace();
+            }
+            servletMap.put(key,httpServlet);
+        }
+
+        List<Element>mappings = root.elements("servlet-mapping");
+        for (Element mapping : mappings) {
+            String key = mapping.element("url-pattern").getText();
+            String value = mapping.element("servlet-name").getText();
+            this.mapping.put(key,value);
+        }
+    }
+
+    public HttpSession getSession(String id) {
+        return sessions.get(id);
+    }
+
+    public HttpSession createSession(Response response) {
+        HttpSession session = new HttpSession(UUID.randomUUID().toString().toUpperCase());
+        sessions.put(session.getId(),session);
+        response.addCookie(new Cookie(JSESSIONID,session.getId()));
+        return session;
+    }
+
+    public HttpServlet dispatch(String url) {
+        return servletMap.get(mapping.get(url));
+    }
+
+    public Object getAttribute(String key){
+        return attributes.get(key);
+    }
+
+    public void setAttributes(String key,Object value){
+        attributes.put(key,value);
+    }
+}
