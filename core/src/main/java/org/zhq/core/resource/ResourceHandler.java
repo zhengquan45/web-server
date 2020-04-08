@@ -26,13 +26,13 @@ public class ResourceHandler {
             URL resource = ResourceHandler.this.getClass().getResource(url);
             if (resource == null) {
                 log.error("找不到该资源:{}", resource);
-                throw new ResourceNotFoundException(HTTPStatus.NOT_FOUND);
+                throw new ResourceNotFoundException();
             }
             response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(IOUtil.getBytesFromFile(url)).write();
             log.info("{}已经写入输出流", url);
         } catch (IOException e) {
             e.printStackTrace();
-            exceptionHandler.handle(new RequestParseException(HTTPStatus.BAD_REQUEST), response, socket);
+            exceptionHandler.handle(new RequestParseException(), response, socket);
         } catch (ResourceNotFoundException e) {
             exceptionHandler.handle(e, response, socket);
         } finally {

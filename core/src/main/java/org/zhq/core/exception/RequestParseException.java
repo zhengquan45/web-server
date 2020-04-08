@@ -8,7 +8,8 @@ import org.zhq.core.exception.base.ServletException;
  */
 
 public class RequestParseException extends ServletException {
-    public RequestParseException(HTTPStatus status) {
+    public static final HTTPStatus status = HTTPStatus.BAD_REQUEST;
+    public RequestParseException() {
         super(status);
     }
 }

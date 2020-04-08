@@ -8,7 +8,9 @@ import org.zhq.core.enumeration.HTTPStatus;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.zhq.core.constant.CharConstant.BLANK;
 import static org.zhq.core.constant.CharConstant.CRLF;
@@ -39,6 +41,7 @@ public class Response {
     private StringBuilder headerAppender;
     private StringBuilder bodyAppender;
     private List<Cookie> cookies;
+    private List<Header> headers;
     private byte[] body;
     private OutputStream os;
 
@@ -49,7 +52,7 @@ public class Response {
         this.cookies = new ArrayList<>();
     }
 
-    public Response header(HTTPStatus status, String contentType, Map<String, String> headers) {
+    public Response header(HTTPStatus status, String contentType) {
         if (contentType == null) {
             contentType = DEFAULT_CONTENT_TYPE;
         }
@@ -60,8 +63,8 @@ public class Response {
         headerAppender.append(CONTENT_TYPE).append(":").append(BLANK).append(contentType).append(CRLF);
         headerAppender.append(CONTENT_LENGTH).append(":").append(BLANK).append(CRLF);
         if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                headerAppender.append(entry.getKey()).append(":").append(BLANK).append(entry.getValue()).append(CRLF);
+            for (Header header : headers) {
+                headerAppender.append(header.getKey()).append(":").append(BLANK).append(header.getValue()).append(CRLF);
             }
         }
         if (cookies.size() > 0) {
@@ -73,17 +76,8 @@ public class Response {
     }
 
     public Response header(HTTPStatus status) {
-        return header(status, DEFAULT_CONTENT_TYPE, null);
+        return header(status, DEFAULT_CONTENT_TYPE);
     }
-
-    public Response header(HTTPStatus status, String contentType) {
-        return header(status, contentType, null);
-    }
-
-    public Response header(HTTPStatus status, Map<String, String> headers) {
-        return header(status, DEFAULT_CONTENT_TYPE, headers);
-    }
-
 
     public Response body(byte[] body) {
         headerAppender.append(body.length).append(CRLF).append(CRLF);
@@ -124,13 +118,16 @@ public class Response {
 
     public void sendRedirect(String url) {
         log.info("重定向至{}", url);
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Location", url);
-        header(HTTPStatus.MOVED_TEMPORARILY, headers);
+        addHeader(new Header("Location", url));
+        header(HTTPStatus.MOVED_TEMPORARILY);
         body(bodyAppender.toString().getBytes(CharsetProperties.charset));
     }
 
     public void addCookie(Cookie cookie) {
         this.cookies.add(cookie);
+    }
+
+    public void addHeader(Header header) {
+        this.headers.add(header);
     }
 }

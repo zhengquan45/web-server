@@ -28,7 +28,7 @@ public class RequestHandler implements Runnable {
     public void run() {
         try {
             if (servlet == null) {
-                throw new ServletNotFoundException(HTTPStatus.NOT_FOUND);
+                throw new ServletNotFoundException();
             }
             request.setRequestHandler(this);
             servlet.service(request, response);
@@ -36,7 +36,7 @@ public class RequestHandler implements Runnable {
         } catch (ServletException e) {
             exceptionHandler.handle(e, response, client);
         } catch (IOException e) {
-            exceptionHandler.handle(new ServletErrorException(HTTPStatus.INTERNAL_SERVER_ERROR), response, client);
+            exceptionHandler.handle(new ServletErrorException(), response, client);
         } finally {
             try {
                 client.close();

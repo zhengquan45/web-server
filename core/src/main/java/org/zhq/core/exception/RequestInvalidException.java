@@ -4,7 +4,8 @@ import org.zhq.core.enumeration.HTTPStatus;
 import org.zhq.core.exception.base.ServletException;
 
 public class RequestInvalidException extends ServletException {
-    public RequestInvalidException(HTTPStatus status) {
+    public static final HTTPStatus status = HTTPStatus.BAD_REQUEST;
+    public RequestInvalidException() {
         super(status);
     }
 }

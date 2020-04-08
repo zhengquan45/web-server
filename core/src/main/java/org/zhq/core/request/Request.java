@@ -106,14 +106,14 @@ public class Request {
 
 
     public Request(InputStream in) throws RequestInvalidException {
-        log.info("开始读取Request========================================================");
+        log.info("开始读取Request");
         BufferedInputStream bis = new BufferedInputStream(in);
         byte[] buf = null;
         try {
             buf = new byte[bis.available()];
             int len = bis.read(buf);
             if (len <= 0) {
-                throw new RequestInvalidException(HTTPStatus.BAD_REQUEST);
+                throw new RequestInvalidException();
             }
         } catch (IOException e) {
             e.printStackTrace();
