@@ -1,4 +1,4 @@
-package org.zhq.core.service;
+package org.zhq.sample.web.service;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UserService {
     private Map<String,String>users = new ConcurrentHashMap<>();
-    private Set<String> online = Collections.synchronizedSet(new HashSet<>());
+    private Set<String> online = Collections.synchronizedSet(new HashSet<String>());
 
     public UserService(){
         users.put("admin","admin");

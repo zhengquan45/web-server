@@ -3,15 +3,15 @@
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.zhq.core.servlet.user.LoginServlet</servlet-class>
+        <servlet-class>org.zhq.sample.web.servlet.LoginServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>org.zhq.core.servlet.user.LogoutServlet</servlet-class>
+        <servlet-class>org.zhq.sample.web.servlet.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserServlet</servlet-name>
-        <servlet-class>org.zhq.core.servlet.user.UserServlet</servlet-class>
+        <servlet-class>org.zhq.sample.web.servlet.UserServlet</servlet-class>
     </servlet>
 
 

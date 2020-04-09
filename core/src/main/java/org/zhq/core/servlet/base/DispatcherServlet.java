@@ -44,12 +44,10 @@ public class DispatcherServlet {
             request.setServletContext(servletContext);
             String url = request.getUrl();
             RequestMethod method = request.getMethod();
-            //首页逻辑 / -> /index.html
             if (isHome(url)) {
-                request.setUrl(FIRST_PAGE);
-                url = request.getUrl();
-            }
-            if (isStaticResource(url, method)) {
+                //首页逻辑 / -> /index.html
+                resourceHandler.handle(FIRST_PAGE, response, client);
+            }else if (isStaticResource(url, method)) {
                 //静态资源
                 log.info("静态资源:{}", url);
                 if (url.endsWith(VIEW_SUFFIX)) {
@@ -72,6 +70,6 @@ public class DispatcherServlet {
     }
 
     private boolean isHome(String url) {
-        return url.equals("/");
+        return url.equals("/") || url.equals("index.html");
     }
 }

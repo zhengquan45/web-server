@@ -65,16 +65,15 @@ public class HTTPServer {
         }
     }
 
-    public static void main(String[] args) {
-
-        HTTPServer server = new HTTPServer();
-        Scanner scanner = new Scanner(System.in);
-        String order;
-        while (scanner.hasNext()) {
-            order = scanner.next();
-            if (order.equals("EXIT")) {
-                server.close();
-            }
-        }
-    }
+     public static void run(){
+         HTTPServer server = new HTTPServer();
+         Scanner scanner = new Scanner(System.in);
+         String order;
+         while (scanner.hasNext()) {
+             order = scanner.next();
+             if (order.equals("EXIT")) {
+                 server.close();
+             }
+         }
+     }
 }

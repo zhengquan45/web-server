@@ -50,6 +50,7 @@ public class Response {
         this.headerAppender = new StringBuilder();
         this.bodyAppender = new StringBuilder();
         this.cookies = new ArrayList<>();
+        this.headers = new ArrayList<>();
     }
 
     public Response header(HTTPStatus status, String contentType) {

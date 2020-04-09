@@ -1,4 +1,4 @@
-package org.zhq.core.servlet.user;
+package org.zhq.sample.web.servlet;
 
 import org.zhq.core.servlet.base.HttpServlet;
 

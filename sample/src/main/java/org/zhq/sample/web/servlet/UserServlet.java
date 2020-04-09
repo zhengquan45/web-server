@@ -1,4 +1,4 @@
-package org.zhq.core.servlet.user;
+package org.zhq.sample.web.servlet;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.exception.base.ServletException;

@@ -2,7 +2,6 @@ package org.zhq.core.servlet.context;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.zhq.core.context.Context;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.response.Response;
 import org.zhq.core.servlet.base.HttpServlet;
@@ -37,9 +36,22 @@ public class ServletContext {
         mapping = new HashMap<>();
         attributes = new ConcurrentHashMap<>();
         sessions = new ConcurrentHashMap<>();
+        loadServletMap();
+    }
+
+    private void loadServletMap() {
         Document document = XMLUtil.getDocument(ServletContext.class.getResource("/WEB-INF/web.xml").getFile());
+        if (document == null) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件不存在");
+        }
         Element root = document.getRootElement();
+        if (root == null) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件没有根结点");
+        }
         List<Element> servlets = root.elements("servlet");
+        if (servlets == null || servlets.size() == 0) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件没有servlet结点");
+        }
         for (Element servlet : servlets) {
             String key = servlet.element("servlet-name").getText();
             String value = servlet.element("servlet-class").getText();
@@ -52,7 +64,10 @@ public class ServletContext {
             servletMap.put(key,httpServlet);
         }
 
-        List<Element>mappings = root.elements("servlet-mapping");
+        List<Element> mappings = root.elements("servlet-mapping");
+        if (mappings == null || mappings.size() == 0) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件没有servlet-mapping结点");
+        }
         for (Element mapping : mappings) {
             String key = mapping.element("url-pattern").getText();
             String value = mapping.element("servlet-name").getText();

@@ -25,7 +25,7 @@ public class ResourceHandler {
         try {
             URL resource = ResourceHandler.this.getClass().getResource(url);
             if (resource == null) {
-                log.error("找不到该资源:{}", resource);
+                log.error("找不到该资源:{}", url);
                 throw new ResourceNotFoundException();
             }
             response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(IOUtil.getBytesFromFile(url)).write();
