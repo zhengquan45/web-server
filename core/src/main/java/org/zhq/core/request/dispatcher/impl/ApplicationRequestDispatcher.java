@@ -30,7 +30,7 @@ public class ApplicationRequestDispatcher implements RequestDispatcher {
         if (ResourceHandler.class.getResource(url) == null) {
             throw new ResourceNotFoundException();
         }
-        String body = TemplateResolver.resolve(new String(IOUtil.getBytesFromFile(url), CharsetProperties.charset), request);
-        response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body.getBytes(CharsetProperties.charset));
+        String body = TemplateResolver.resolve(new String(IOUtil.getBytesFromFile(url), CharsetProperties.UTF_8_CHARSET), request);
+        response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body.getBytes(CharsetProperties.UTF_8_CHARSET));
     }
 }

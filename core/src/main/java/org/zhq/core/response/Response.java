@@ -94,10 +94,10 @@ public class Response {
 
         if (body == null) {
             log.info("多次使用print或println构建的响应体");
-            body(bodyAppender.toString().getBytes(CharsetProperties.charset));
+            body(bodyAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET));
         }
 
-        byte[] header = headerAppender.toString().getBytes(CharsetProperties.charset);
+        byte[] header = headerAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET);
         byte[] response = new byte[header.length + body.length];
 
         System.arraycopy(header, 0, response, 0, header.length);
@@ -121,7 +121,7 @@ public class Response {
         log.info("重定向至{}", url);
         addHeader(new Header("Location", url));
         header(HTTPStatus.MOVED_TEMPORARILY);
-        body(bodyAppender.toString().getBytes(CharsetProperties.charset));
+        body(bodyAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET));
     }
 
     public void addCookie(Cookie cookie) {

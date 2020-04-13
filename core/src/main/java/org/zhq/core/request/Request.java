@@ -119,7 +119,7 @@ public class Request {
         }
         String requestMsg = null;
         try {
-            requestMsg = URLDecoder.decode(new String(buf, CharsetProperties.charset), "UTF-8");
+            requestMsg = URLDecoder.decode(new String(buf, CharsetProperties.UTF_8_CHARSET), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

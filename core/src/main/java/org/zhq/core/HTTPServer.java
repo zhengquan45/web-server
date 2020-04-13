@@ -41,6 +41,10 @@ public class HTTPServer {
     }
 
     private class Listener extends Thread {
+        public Listener() {
+            super("Socket Acceptor");
+        }
+
         public void shutdown(){
             try {
                 server.close();
