@@ -1,11 +1,15 @@
 package org.zhq.core.resource;
 
 import lombok.extern.slf4j.Slf4j;
+import org.zhq.core.constant.CharsetProperties;
 import org.zhq.core.enumeration.HTTPStatus;
-import org.zhq.core.exception.RequestParseException;
 import org.zhq.core.exception.ResourceNotFoundException;
+import org.zhq.core.exception.ServletErrorException;
+import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.exception.handler.ExceptionHandler;
+import org.zhq.core.request.Request;
 import org.zhq.core.response.Response;
+import org.zhq.core.template.TemplateResolver;
 import org.zhq.core.util.IOUtil;
 import org.zhq.core.util.MimeTypeUtil;
 
@@ -21,19 +25,20 @@ public class ResourceHandler {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public void handle(String url, Response response, Socket socket) {
+    public void handle(Request request, Response response, Socket socket) {
+        String url = request.getUrl();
         try {
             URL resource = ResourceHandler.this.getClass().getResource(url);
             if (resource == null) {
                 log.error("找不到该资源:{}", url);
                 throw new ResourceNotFoundException();
             }
-            response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(IOUtil.getBytesFromFile(url)).write();
+            String body = TemplateResolver.resolve(new String(IOUtil.getBytesFromFile(url), CharsetProperties.charset),request);
+            response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body.getBytes(CharsetProperties.charset)).write();
             log.info("{}已经写入输出流", url);
         } catch (IOException e) {
-            e.printStackTrace();
-            exceptionHandler.handle(new RequestParseException(), response, socket);
-        } catch (ResourceNotFoundException e) {
+            exceptionHandler.handle(new ServletErrorException(), response, socket);
+        } catch (ServletException e) {
             exceptionHandler.handle(e, response, socket);
         } finally {
             try {

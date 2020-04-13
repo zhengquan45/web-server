@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.constant.CharsetProperties;
 import org.zhq.core.cookie.Cookie;
-import org.zhq.core.enumeration.HTTPStatus;
 import org.zhq.core.enumeration.RequestMethod;
 import org.zhq.core.exception.RequestInvalidException;
 import org.zhq.core.request.dispatcher.RequestDispatcher;
@@ -160,7 +159,7 @@ public class Request {
 
     private void parseCookie() {
         if (headers.containsKey(COOKIE)) {
-            String[] rawCookies = headers.get(COOKIE).get(0).split(";");
+            String[] rawCookies = headers.get(COOKIE).get(0).split("; ");
             this.cookies = Stream.of(rawCookies).map(s -> {
                 String[] kv = s.split("=");
                 return new Cookie(kv[0], kv[1]);

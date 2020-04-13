@@ -16,7 +16,7 @@ public class UserServlet extends HttpServlet {
         if (request.getSession().getAttribute("username")!=null) {
             request.getRequestDispatcher("/views/user.html").forward(request,response);
         }else{
-            response.sendRedirect("http://localhost:8080/login.html");
+            response.sendRedirect("http://localhost:8080/views/login.html");
         }
     }
 }

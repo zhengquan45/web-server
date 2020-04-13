@@ -27,8 +27,22 @@ public class LoginServlet extends HttpServlet {
         String password = params.get("password").get(0);
         if(userService.login(username,password)){
             log.info("{} 登录成功",username);
+            response.sendRedirect("/views/success.html");
             request.getSession().setAttributes("username",username);
-            request.getRequestDispatcher("/views/success.html").forward(request,response);
+        }else{
+            log.info("登录失败");
+            response.sendRedirect("/errors/400.html");
+        }
+    }
+
+    @Override
+    public void doGet(Request request, Response response) throws ServletException, IOException {
+        String username = (String) request.getSession().getAttribute("username");
+        if (username != null) {
+            log.info("已经登录，跳转至success页面");
+            response.sendRedirect("/success.html");
+        } else {
+            request.getRequestDispatcher("/views/login.html").forward(request,response);
         }
     }
 }

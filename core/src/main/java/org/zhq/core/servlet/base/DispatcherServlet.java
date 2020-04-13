@@ -16,8 +16,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.zhq.core.context.Context.*;
-
 @Data
 @Slf4j
 public class DispatcherServlet {
@@ -44,17 +42,13 @@ public class DispatcherServlet {
             request.setServletContext(servletContext);
             String url = request.getUrl();
             RequestMethod method = request.getMethod();
-            if (isHome(url)) {
-                //首页逻辑 / -> /index.html
-                resourceHandler.handle(FIRST_PAGE, response, client);
-            }else if (isStaticResource(url, method)) {
-                //静态资源
+            if (isStaticResource(url,method)) {
                 log.info("静态资源:{}", url);
-                if (url.endsWith(VIEW_SUFFIX)) {
-                    resourceHandler.handle(VIEW_PREFIX + url, response, client);
-                } else {
-                    resourceHandler.handle(VIEW_STATIC + url, response, client);
+                //首页
+                if (url.equals("/")) {
+                    request.setUrl("/index.html");
                 }
+                resourceHandler.handle(request, response, client);
             } else {
                 //动态资源
                 HttpServlet servlet = servletContext.dispatch(url);
@@ -66,10 +60,7 @@ public class DispatcherServlet {
     }
 
     private boolean isStaticResource(String url, RequestMethod method) {
-        return method == RequestMethod.GET && url.contains(".");
+        return method == RequestMethod.GET && (url.contains(".") || url.equals("/"));
     }
 
-    private boolean isHome(String url) {
-        return url.equals("/") || url.equals("index.html");
-    }
 }

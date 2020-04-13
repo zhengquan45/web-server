@@ -16,6 +16,7 @@ public class TemplateResolver {
     public static String resolve(String content, Request request) throws TemplateResolveException {
         Matcher matcher = regex.matcher(content);
         StringBuffer sb = new StringBuffer();
+        //matcher 没有find到元素就是 静态资源 反之 填充占位符
         while (matcher.find()) {
             log.info("{}", matcher.group(1));
             String placeHolder = matcher.group(1);
@@ -53,6 +54,7 @@ public class TemplateResolver {
                 matcher.appendReplacement(sb, value.toString());
             }
         }
-        return sb.toString();
+        String result = sb.toString();
+        return result.length() == 0 ? content : result;
     }
 }
