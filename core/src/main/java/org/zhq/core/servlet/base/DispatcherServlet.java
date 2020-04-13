@@ -40,27 +40,12 @@ public class DispatcherServlet {
         try {
             Request request = new Request(client.getInputStream());
             request.setServletContext(servletContext);
-            String url = request.getUrl();
-            RequestMethod method = request.getMethod();
-            if (isStaticResource(url,method)) {
-                log.info("静态资源:{}", url);
-                //首页
-                if (url.equals("/")) {
-                    request.setUrl("/index.html");
-                }
-                resourceHandler.handle(request, response, client);
-            } else {
-                //动态资源
-                HttpServlet servlet = servletContext.dispatch(url);
-                pool.execute(new RequestHandler(client, request, response, servlet, exceptionHandler));
-            }
+            HttpServlet servlet = servletContext.dispatch(request.getUrl());
+            pool.execute(new RequestHandler(client, request, response, servlet, exceptionHandler, resourceHandler));
         } catch (ServletException e) {
             exceptionHandler.handle(e, response, client);
         }
     }
 
-    private boolean isStaticResource(String url, RequestMethod method) {
-        return method == RequestMethod.GET && (url.contains(".") || url.equals("/"));
-    }
 
 }
