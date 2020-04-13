@@ -22,16 +22,20 @@ public class ServletContext {
     private Map<String, String> mapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
-    private static ServletContext INSTANCE = new ServletContext();
-    private ServletContext() {
+    private static ServletContext INSTANCE;
+
+    private ServletContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         init();
     }
 
-    public static ServletContext getInstance(){
+    public static ServletContext getInstance() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+        if (INSTANCE == null) {
+            INSTANCE = new ServletContext();
+        }
         return INSTANCE;
     }
 
-    private void init() {
+    private void init() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         servletMap = new HashMap<>();
         mapping = new HashMap<>();
         attributes = new ConcurrentHashMap<>();
@@ -39,7 +43,7 @@ public class ServletContext {
         loadServletMap();
     }
 
-    private void loadServletMap() {
+    private void loadServletMap() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         Document document = XMLUtil.getDocument(ServletContext.class.getResource("/WEB-INF/web.xml").getFile());
         if (document == null) {
             throw new IllegalStateException("/WEB-INF/web.xml 文件不存在");
@@ -56,11 +60,7 @@ public class ServletContext {
             String key = servlet.element("servlet-name").getText();
             String value = servlet.element("servlet-class").getText();
             HttpServlet httpServlet = null;
-            try {
-                httpServlet = (HttpServlet) Class.forName(value).newInstance();
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-            }
+            httpServlet = (HttpServlet) Class.forName(value).newInstance();
             servletMap.put(key,httpServlet);
         }
 

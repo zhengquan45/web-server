@@ -51,12 +51,6 @@ public class RequestHandler implements Runnable {
             exceptionHandler.handle(e, response, client);
         } catch (IOException e) {
             exceptionHandler.handle(new ServletErrorException(), response, client);
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 

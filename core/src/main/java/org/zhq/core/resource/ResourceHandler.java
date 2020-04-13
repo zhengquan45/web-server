@@ -43,12 +43,6 @@ public class ResourceHandler {
             exceptionHandler.handle(new ServletErrorException(), response, socket);
         } catch (ServletException e) {
             exceptionHandler.handle(e, response, socket);
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
     }

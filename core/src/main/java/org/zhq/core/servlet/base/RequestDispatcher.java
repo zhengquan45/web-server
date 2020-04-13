@@ -2,7 +2,6 @@ package org.zhq.core.servlet.base;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.zhq.core.enumeration.RequestMethod;
 import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.exception.handler.ExceptionHandler;
 import org.zhq.core.request.Request;
@@ -18,13 +17,13 @@ import java.util.concurrent.TimeUnit;
 
 @Data
 @Slf4j
-public class DispatcherServlet {
+public class RequestDispatcher {
     private ResourceHandler resourceHandler;
     private ExceptionHandler exceptionHandler;
     private ThreadPoolExecutor pool;
     private ServletContext servletContext;
 
-    public DispatcherServlet() {
+    public RequestDispatcher() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         servletContext = ServletContext.getInstance();
         exceptionHandler = new ExceptionHandler();
         resourceHandler = new ResourceHandler(exceptionHandler);
