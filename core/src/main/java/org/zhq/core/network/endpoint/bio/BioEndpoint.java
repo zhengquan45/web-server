@@ -2,8 +2,8 @@ package org.zhq.core.network.endpoint.bio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.network.connector.bio.BioAcceptor;
+import org.zhq.core.network.dispatcher.bio.BioDispatcher;
 import org.zhq.core.network.endpoint.Endpoint;
-import org.zhq.core.servlet.base.RequestDispatcher;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,13 +17,13 @@ public class BioEndpoint extends Endpoint {
     private ServerSocket server;
     private BioAcceptor acceptor;
     //放在这里是由于acceptor后期可能改为多线程,而这个调度器只会初始化一次
-    private RequestDispatcher dispatcher;
+    private BioDispatcher dispatcher;
     private volatile boolean isRunning = true;
 
     @Override
     public void start(int port) {
         try {
-            dispatcher = new RequestDispatcher();
+            dispatcher = new BioDispatcher();
             server = new ServerSocket(port);
             initAcceptor();
             log.info("服务器启动");

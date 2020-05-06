@@ -3,6 +3,7 @@ package org.zhq.core.request;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.constant.CharsetProperties;
+import org.zhq.core.context.WebApplication;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.enumeration.RequestMethod;
 import org.zhq.core.exception.RequestInvalidException;
@@ -14,7 +15,6 @@ import org.zhq.core.session.HttpSession;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -73,6 +73,23 @@ public class Request {
     private List<Cookie> cookies;
     private HttpSession session;
 
+    public Request(byte[] data){
+        servletContext = WebApplication.getServletContext();
+        attributes = new HashMap<>();
+        String requestMsg = null;
+        try {
+            requestMsg = URLDecoder.decode(new String(data, CharsetProperties.UTF_8_CHARSET), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        List<String> lines = Arrays.asList(requestMsg.split(CRLF));
+        log.info("Request读取完毕\r\n{}", Arrays.toString(lines.toArray()));
+        parseHeader(lines);
+        if (headers.containsKey(CONTENT_LENGTH) && !headers.get(CONTENT_LENGTH).get(0).equals("0")) {
+            parseBody(lines.get(lines.size() - 1));
+        }
+    }
+
     public void setAttribute(String key, Object value) {
         attributes.put(key, value);
     }
@@ -101,34 +118,6 @@ public class Request {
         }
         session = servletContext.createSession(requestHandler.getResponse());
         return session;
-    }
-
-
-    public Request(InputStream in) throws RequestInvalidException {
-        log.info("开始读取Request");
-        BufferedInputStream bis = new BufferedInputStream(in);
-        byte[] buf = null;
-        try {
-            buf = new byte[bis.available()];
-            int len = bis.read(buf);
-            if (len <= 0) {
-                throw new RequestInvalidException();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String requestMsg = null;
-        try {
-            requestMsg = URLDecoder.decode(new String(buf, CharsetProperties.UTF_8_CHARSET), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        List<String> lines = Arrays.asList(requestMsg.split(CRLF));
-        log.info("Request读取完毕\r\n{}", Arrays.toString(lines.toArray()));
-        parseHeader(lines);
-        if (headers.containsKey(CONTENT_LENGTH) && !headers.get(CONTENT_LENGTH).get(0).equals("0")) {
-            parseBody(lines.get(lines.size() - 1));
-        }
     }
 
 
@@ -174,18 +163,6 @@ public class Request {
     private void parseHead(List<String> lines) {
         String header;
         this.headers = new HashMap<>();
-//        lines.stream()
-//                .filter(line -> line.equals(""))
-//                .map(line -> {
-//                    int colonIndex = line.indexOf(":");
-//                    String key = line.substring(0, colonIndex);
-//                    String[] values = line.substring(colonIndex + 2).split(",");
-//                    Object[] entry = new Object[2];
-//                    entry[0] = key;
-//                    entry[1] = values;
-//                    return entry;
-//                })
-//                .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
         for (int i = 1; i < lines.size(); i++) {
             header = lines.get(i);
             if (header.equals("")) {

@@ -1,8 +1,9 @@
 package org.zhq.core.network.connector.bio;
 
 import lombok.extern.slf4j.Slf4j;
+import org.zhq.core.network.dispatcher.bio.BioDispatcher;
 import org.zhq.core.network.endpoint.bio.BioEndpoint;
-import org.zhq.core.servlet.base.RequestDispatcher;
+import org.zhq.core.network.wrapper.bio.BioSocketWrapper;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -13,9 +14,9 @@ import java.net.Socket;
 @Slf4j
 public class BioAcceptor implements Runnable {
     private BioEndpoint server;
-    private RequestDispatcher dispatcher;
+    private BioDispatcher dispatcher;
     
-    public BioAcceptor(BioEndpoint server, RequestDispatcher dispatcher) {
+    public BioAcceptor(BioEndpoint server, BioDispatcher dispatcher) {
         this.server = server;
         this.dispatcher = dispatcher;
     }
@@ -29,7 +30,7 @@ public class BioAcceptor implements Runnable {
                 //TCP的短连接，请求处理完即关闭
                 client = server.accept();
                 log.info("client:{}", client);
-                dispatcher.doDispatch(client);
+                dispatcher.doDispatch(new BioSocketWrapper(client));
             } catch (IOException e) {
                 e.printStackTrace();
             }

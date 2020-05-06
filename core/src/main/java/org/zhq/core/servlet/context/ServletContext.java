@@ -30,20 +30,8 @@ public class ServletContext {
     private Map<String, String> mapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
-    private static ServletContext INSTANCE;
 
-    private ServletContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-        init();
-    }
-
-    public static ServletContext getInstance() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-        if (INSTANCE == null) {
-            INSTANCE = new ServletContext();
-        }
-        return INSTANCE;
-    }
-
-    private void init() throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+     public ServletContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         servletMap = new HashMap<>();
         mapping = new HashMap<>();
         attributes = new ConcurrentHashMap<>();
