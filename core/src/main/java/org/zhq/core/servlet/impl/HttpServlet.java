@@ -1,14 +1,30 @@
-package org.zhq.core.servlet.base;
+package org.zhq.core.servlet.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.enumeration.RequestMethod;
-import org.zhq.core.exception.ResourceNotFoundException;
 import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.request.Request;
 import org.zhq.core.response.Response;
+import org.zhq.core.servlet.Servlet;
 
 import java.io.IOException;
 
-public class HttpServlet {
+/**
+ * Created by SinjinSong on 2017/7/21.
+ */
+@Slf4j
+public abstract class HttpServlet implements Servlet {
+
+    @Override
+    public void init() {
+        
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
     public void service(Request request, Response response) throws ServletException, IOException {
         if (request.getMethod() == RequestMethod.GET) {
             doGet(request, response);
@@ -22,18 +38,16 @@ public class HttpServlet {
     }
 
     public void doGet(Request request, Response response) throws ServletException, IOException {
-
     }
 
     public void doPost(Request request, Response response) throws ServletException, IOException {
-
     }
 
-    public void doPut(Request request, Response response) {
-
+    public void doPut(Request request, Response response) throws ServletException, IOException {
     }
 
-    public void doDelete(Request request, Response response) {
-
+    public void doDelete(Request request, Response response) throws ServletException, IOException {
     }
+
+
 }

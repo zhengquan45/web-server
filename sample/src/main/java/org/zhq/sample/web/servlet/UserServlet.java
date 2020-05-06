@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.request.Request;
 import org.zhq.core.response.Response;
-import org.zhq.core.servlet.base.HttpServlet;
+import org.zhq.core.servlet.impl.HttpServlet;
 
 import java.io.IOException;
 

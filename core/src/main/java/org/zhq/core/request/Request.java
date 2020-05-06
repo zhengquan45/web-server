@@ -6,15 +6,12 @@ import org.zhq.core.constant.CharsetProperties;
 import org.zhq.core.context.WebApplication;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.enumeration.RequestMethod;
-import org.zhq.core.exception.RequestInvalidException;
+import org.zhq.core.network.handler.AbstractRequestHandler;
 import org.zhq.core.request.dispatcher.RequestDispatcher;
 import org.zhq.core.request.dispatcher.impl.ApplicationRequestDispatcher;
-import org.zhq.core.servlet.base.RequestHandler;
-import org.zhq.core.servlet.context.ServletContext;
+import org.zhq.core.context.ServletContext;
 import org.zhq.core.session.HttpSession;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -23,8 +20,8 @@ import java.util.stream.Stream;
 
 import static org.zhq.core.constant.CharConstant.BLANK;
 import static org.zhq.core.constant.CharConstant.CRLF;
-import static org.zhq.core.context.Context.CONTENT_LENGTH;
-import static org.zhq.core.context.Context.COOKIE;
+import static org.zhq.core.constant.ContextConstant.CONTENT_LENGTH;
+import static org.zhq.core.constant.ContextConstant.COOKIE;
 
 /**
  * Created by SinjinSong on 2017/7/20.
@@ -63,7 +60,7 @@ import static org.zhq.core.context.Context.COOKIE;
 @Data
 @Slf4j
 public class Request {
-    private RequestHandler requestHandler;
+    private AbstractRequestHandler requestHandler;
     private RequestMethod method;
     private String url;
     private Map<String, List<String>> params;

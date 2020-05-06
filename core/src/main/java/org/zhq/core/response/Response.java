@@ -6,7 +6,6 @@ import org.zhq.core.constant.CharsetProperties;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.enumeration.HTTPStatus;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +13,7 @@ import java.util.List;
 
 import static org.zhq.core.constant.CharConstant.BLANK;
 import static org.zhq.core.constant.CharConstant.CRLF;
-import static org.zhq.core.context.Context.*;
+import static org.zhq.core.constant.ContextConstant.*;
 
 
 /**
@@ -86,36 +85,6 @@ public class Response {
         return this;
     }
 
-    public void write() {
-        //默认返回OK
-        if (this.headerAppender.toString().length() == 0) {
-            header(HTTPStatus.OK);
-        }
-
-        if (body == null) {
-            log.info("多次使用print或println构建的响应体");
-            body(bodyAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET));
-        }
-
-        byte[] header = headerAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET);
-        byte[] response = new byte[header.length + body.length];
-
-        System.arraycopy(header, 0, response, 0, header.length);
-        System.arraycopy(body, 0, response, header.length, body.length);
-
-        try {
-            os.write(response);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                os.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public void sendRedirect(String url) {
         log.info("重定向至{}", url);
@@ -130,5 +99,19 @@ public class Response {
 
     public void addHeader(Header header) {
         this.headers.add(header);
+    }
+
+    public byte[] getResponseBytes() {
+        if (body == null) {
+            log.info("多次使用print或println构建的响应体");
+            body(bodyAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET));
+        }
+
+        byte[] header = headerAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET);
+        byte[] response = new byte[header.length + body.length];
+
+        System.arraycopy(header, 0, response, 0, header.length);
+        System.arraycopy(body, 0, response, header.length, body.length);
+        return response;
     }
 }

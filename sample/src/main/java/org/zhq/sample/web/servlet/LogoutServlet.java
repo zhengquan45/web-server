@@ -1,6 +1,7 @@
 package org.zhq.sample.web.servlet;
 
-import org.zhq.core.servlet.base.HttpServlet;
+
+import org.zhq.core.servlet.impl.HttpServlet;
 
 public class LogoutServlet extends HttpServlet {
 

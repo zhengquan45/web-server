@@ -1,10 +1,12 @@
-package org.zhq.core.servlet.context;
+package org.zhq.core.context;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.response.Response;
-import org.zhq.core.servlet.base.HttpServlet;
+import org.zhq.core.servlet.Servlet;
+import org.zhq.core.servlet.impl.DefaultServlet;
+import org.zhq.core.servlet.impl.HttpServlet;
 import org.zhq.core.session.HttpSession;
 import org.zhq.core.util.XMLUtil;
 
@@ -14,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.zhq.core.context.Context.JSESSIONID;
+import static org.zhq.core.constant.ContextConstant.JSESSIONID;
 
 /**
  * Servlet上下文
@@ -26,7 +28,7 @@ import static org.zhq.core.context.Context.JSESSIONID;
  */
 public class ServletContext {
 
-    private Map<String, HttpServlet> servletMap;
+    private Map<String, Servlet> servletMap;
     private Map<String, String> mapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
@@ -55,8 +57,7 @@ public class ServletContext {
         for (Element servlet : servlets) {
             String key = servlet.element("servlet-name").getText();
             String value = servlet.element("servlet-class").getText();
-            HttpServlet httpServlet = null;
-            httpServlet = (HttpServlet) Class.forName(value).newInstance();
+            HttpServlet httpServlet = (HttpServlet) Class.forName(value).newInstance();
             servletMap.put(key,httpServlet);
         }
 
@@ -82,15 +83,16 @@ public class ServletContext {
         return session;
     }
 
-    public HttpServlet dispatch(String url) {
-        return servletMap.get(mapping.get(url));
-    }
-
     public Object getAttribute(String key){
         return attributes.get(key);
     }
 
     public void setAttributes(String key,Object value){
         attributes.put(key,value);
+    }
+
+    public Servlet mapServlet(String url) {
+        Servlet servlet = this.servletMap.get(mapping.get(url));
+        return servlet == null ? new DefaultServlet() : servlet;
     }
 }

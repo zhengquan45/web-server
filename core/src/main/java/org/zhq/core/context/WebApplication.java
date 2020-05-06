@@ -1,7 +1,5 @@
 package org.zhq.core.context;
 
-import org.zhq.core.servlet.context.ServletContext;
-
 /**
  * Created by SinjinSong on 2017/7/21.
  */

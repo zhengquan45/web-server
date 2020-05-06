@@ -5,7 +5,7 @@ import org.zhq.core.exception.RequestInvalidException;
 import org.zhq.core.exception.handler.ExceptionHandler;
 import org.zhq.core.network.wrapper.SocketWrapper;
 import org.zhq.core.resource.ResourceHandler;
-import org.zhq.core.servlet.context.ServletContext;
+import org.zhq.core.context.ServletContext;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadFactory;

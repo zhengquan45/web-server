@@ -7,6 +7,7 @@ import org.zhq.core.exception.ResourceNotFoundException;
 import org.zhq.core.exception.ServletErrorException;
 import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.exception.handler.ExceptionHandler;
+import org.zhq.core.network.wrapper.bio.BioSocketWrapper;
 import org.zhq.core.request.Request;
 import org.zhq.core.response.Response;
 import org.zhq.core.template.TemplateResolver;
@@ -38,12 +39,12 @@ public class ResourceHandler {
                 // 对html文件模版参数替换
                 body = TemplateResolver.resolve(new String(IOUtil.getBytesFromFile(url), CharsetProperties.UTF_8_CHARSET), request).getBytes(CharsetProperties.UTF_8_CHARSET);
             }
-            response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body).write();
+            response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body);
             log.info("{}已经写入输出流", url);
         } catch (IOException e) {
-            exceptionHandler.handle(new ServletErrorException(), response, socket);
+            exceptionHandler.handle(new ServletErrorException(), response, new BioSocketWrapper(socket));
         } catch (ServletException e) {
-            exceptionHandler.handle(e, response, socket);
+            exceptionHandler.handle(e, response, new BioSocketWrapper(socket));
         }
 
     }

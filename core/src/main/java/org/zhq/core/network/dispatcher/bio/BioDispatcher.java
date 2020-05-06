@@ -4,12 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.exception.RequestInvalidException;
 import org.zhq.core.exception.base.ServletException;
 import org.zhq.core.network.dispatcher.AbstractDispatcher;
+import org.zhq.core.network.handler.bio.BioRequestHandler;
 import org.zhq.core.network.wrapper.SocketWrapper;
 import org.zhq.core.network.wrapper.bio.BioSocketWrapper;
 import org.zhq.core.request.Request;
 import org.zhq.core.response.Response;
-import org.zhq.core.servlet.base.HttpServlet;
-import org.zhq.core.servlet.base.RequestHandler;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -43,10 +42,9 @@ public class BioDispatcher extends AbstractDispatcher {
             //解析请求
             response = new Response(socket.getOutputStream());
             request = new Request(buf);
-            HttpServlet servlet = servletContext.dispatch(request.getUrl());
-            pool.execute(new RequestHandler(((BioSocketWrapper) socketWrapper).getSocket(), request, response, servlet, exceptionHandler, resourceHandler));
+            pool.execute(new BioRequestHandler(socketWrapper, exceptionHandler, resourceHandler, request, response));
         } catch (ServletException e) {
-            exceptionHandler.handle(e, response, ((BioSocketWrapper) socketWrapper).getSocket());
+            exceptionHandler.handle(e, response, socketWrapper);
         } catch (IOException e) {
             e.printStackTrace();
         }

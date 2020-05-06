@@ -1,6 +1,6 @@
-package org.zhq.core.context;
+package org.zhq.core.constant;
 
-public class Context {
+public class ContextConstant {
     public static final String VIEW_PREFIX = "/views";
     public static final String VIEW_STATIC = "/static";
     public static final String VIEW_SUFFIX = ".html";
