@@ -27,8 +27,8 @@ public class LoginServlet extends HttpServlet {
         String password = params.get("password").get(0);
         if(userService.login(username,password)){
             log.info("{} 登录成功",username);
-            response.sendRedirect("/views/success.html");
             request.getSession().setAttributes("username",username);
+            response.sendRedirect("/views/success.html");
         }else{
             log.info("登录失败");
             response.sendRedirect("/errors/400.html");

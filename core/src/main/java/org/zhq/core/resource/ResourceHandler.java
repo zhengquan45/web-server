@@ -35,6 +35,7 @@ public class ResourceHandler {
             }
             byte [] body = IOUtil.getBytesFromFile(url);
             if(url.endsWith(".html")) {
+                // 对html文件模版参数替换
                 body = TemplateResolver.resolve(new String(IOUtil.getBytesFromFile(url), CharsetProperties.UTF_8_CHARSET), request).getBytes(CharsetProperties.UTF_8_CHARSET);
             }
             response.header(HTTPStatus.OK, MimeTypeUtil.getTypes(url)).body(body).write();

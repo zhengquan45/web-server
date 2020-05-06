@@ -16,6 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.zhq.core.context.Context.JSESSIONID;
 
+/**
+ * Servlet上下文
+ * 包含:
+ * 1、servlet和servletName映射
+ * 2、path和servletName映射
+ * 3、全局属性表
+ * 4、全局session表
+ */
 public class ServletContext {
 
     private Map<String, HttpServlet> servletMap;

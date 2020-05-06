@@ -36,6 +36,9 @@ public class Server {
         requestDispatcher.shutdown();
     }
 
+    /**
+     * socket接收监听器
+     */
     private class Acceptor extends Thread {
         public Acceptor() {
             super("Socket Acceptor");
@@ -47,6 +50,7 @@ public class Server {
                 try {
                     Socket client = server.accept();
                     log.info("客户端:{}",client);
+                    //把接收的socket交给请求调度器调度
                     requestDispatcher.doDispatch(client);
                 } catch (IOException e) {
                     e.printStackTrace();

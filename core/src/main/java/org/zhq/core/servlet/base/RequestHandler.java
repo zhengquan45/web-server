@@ -16,6 +16,9 @@ import org.zhq.core.response.Response;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * 请求逻辑处理器
+ */
 @Data
 @AllArgsConstructor
 @Slf4j
@@ -32,6 +35,7 @@ public class RequestHandler implements Runnable {
         try {
             String url = request.getUrl();
             RequestMethod method = request.getMethod();
+            request.setRequestHandler(this);
             if (isStaticResource(url,method)) {
                 log.info("静态资源:{}", url);
                 //首页
@@ -43,7 +47,6 @@ public class RequestHandler implements Runnable {
                 if (servlet == null) {
                     throw new ServletNotFoundException();
                 }
-                request.setRequestHandler(this);
                 servlet.service(request, response);
                 response.write();
             }
