@@ -40,7 +40,7 @@ public class BioDispatcher extends AbstractDispatcher {
                 e.printStackTrace();
             }
             //解析请求
-            response = new Response(socket.getOutputStream());
+            response = new Response();
             request = new Request(buf);
             pool.execute(new BioRequestHandler(socketWrapper, exceptionHandler, resourceHandler, request, response));
         } catch (ServletException e) {

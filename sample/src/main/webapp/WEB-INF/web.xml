@@ -10,6 +10,10 @@
         <servlet-class>org.zhq.sample.web.servlet.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>UserEditServlet</servlet-name>
+        <servlet-class>org.zhq.sample.web.servlet.UserEditServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserServlet</servlet-name>
         <servlet-class>org.zhq.sample.web.servlet.UserServlet</servlet-class>
     </servlet>
@@ -28,6 +32,11 @@
     <servlet-mapping>
         <servlet-name>UserServlet</servlet-name>
         <url-pattern>/user</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>UserEditServlet</servlet-name>
+        <url-pattern>/user/edit</url-pattern>
     </servlet-mapping>
 
 </web-app>

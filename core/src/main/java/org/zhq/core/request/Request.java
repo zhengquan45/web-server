@@ -20,8 +20,7 @@ import java.util.stream.Stream;
 
 import static org.zhq.core.constant.CharConstant.BLANK;
 import static org.zhq.core.constant.CharConstant.CRLF;
-import static org.zhq.core.constant.ContextConstant.CONTENT_LENGTH;
-import static org.zhq.core.constant.ContextConstant.COOKIE;
+import static org.zhq.core.constant.ContextConstant.*;
 
 /**
  * Created by SinjinSong on 2017/7/20.
@@ -61,13 +60,22 @@ import static org.zhq.core.constant.ContextConstant.COOKIE;
 @Slf4j
 public class Request {
     private AbstractRequestHandler requestHandler;
+    //请求的类型
     private RequestMethod method;
+    //请求url
     private String url;
+    //请求参数
     private Map<String, List<String>> params;
+    //请求头参数
     private Map<String, List<String>> headers;
+    //请求体
+    private String body;
     private Map<String, Object> attributes;
+    //servlet上下文
     private ServletContext servletContext;
+    //请求客户端Cookies
     private List<Cookie> cookies;
+    //JESSIONID对应的session
     private HttpSession session;
 
     public Request(byte[] data){
@@ -87,6 +95,14 @@ public class Request {
         }
     }
 
+    public String getParameter(String key) {
+        List<String> params = this.params.get(key);
+        if(params == null) {
+            return null;
+        }
+        return params.get(0);
+    }
+
     public void setAttribute(String key, Object value) {
         attributes.put(key, value);
     }
@@ -100,6 +116,10 @@ public class Request {
     }
 
     public HttpSession getSession() {
+        return getSession(true);
+    }
+
+    public HttpSession getSession(boolean createIfNotExist) {
         if (session != null) {
             return session;
         }
@@ -112,11 +132,17 @@ public class Request {
                 }
             }
         }
+        if(!createIfNotExist){
+           return null;
+        }
         session = servletContext.createSession(requestHandler.getResponse());
         return session;
     }
 
-
+    /**
+     * 方法 url url参数 header参数 cookie参数
+     * @param lines
+     */
     private void parseHeader(List<String> lines) {
         log.info("解析请求头");
         String firstLine = lines.get(0);
@@ -131,7 +157,7 @@ public class Request {
         this.url = urlSlices[0];
         log.debug("url:{}", this.url);
 
-        //解析GET参数
+        //解析URL参数
         if (urlSlices.length > 1) {
             parseParams(urlSlices[1]);
         }
@@ -171,11 +197,18 @@ public class Request {
         }
     }
 
+    /**
+     * 解析请求体参数
+     * @param body
+     */
     private void parseBody(String body) {
         log.info("解析请求体");
         //解析请求体
-        parseParams(body);
-        log.debug("params:{}", this.params);
+        if("application/x-www-form-urlencoded".equals(headers.get(CONTENT_TYPE).get(0))){
+            parseParams(body);
+        }else{
+            this.body = body;
+        }
     }
 
     private void parseParams(String params) {

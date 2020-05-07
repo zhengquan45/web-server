@@ -42,10 +42,8 @@ public class Response {
     private List<Cookie> cookies;
     private List<Header> headers;
     private byte[] body;
-    private OutputStream os;
 
-    public Response(OutputStream os) {
-        this.os = os;
+    public Response() {
         this.headerAppender = new StringBuilder();
         this.bodyAppender = new StringBuilder();
         this.cookies = new ArrayList<>();

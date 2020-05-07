@@ -46,4 +46,12 @@ public class HttpSession {
     public Instant getLastAccessed() {
         return lastAccessed;
     }
+
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 }
