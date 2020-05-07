@@ -1,12 +1,13 @@
 package org.zhq.core.context;
 
+import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.zhq.core.context.holder.ServletHolder;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.response.Response;
 import org.zhq.core.servlet.Servlet;
 import org.zhq.core.servlet.impl.DefaultServlet;
-import org.zhq.core.servlet.impl.HttpServlet;
 import org.zhq.core.session.HttpSession;
 import org.zhq.core.util.XMLUtil;
 
@@ -26,9 +27,10 @@ import static org.zhq.core.constant.ContextConstant.JSESSIONID;
  * 3、全局属性表
  * 4、全局session表
  */
+@Slf4j
 public class ServletContext {
 
-    private Map<String, Servlet> servletMap;
+    private Map<String, ServletHolder> servletMap;
     private Map<String, String> mapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
@@ -57,8 +59,7 @@ public class ServletContext {
         for (Element servlet : servlets) {
             String key = servlet.element("servlet-name").getText();
             String value = servlet.element("servlet-class").getText();
-            HttpServlet httpServlet = (HttpServlet) Class.forName(value).newInstance();
-            servletMap.put(key,httpServlet);
+            servletMap.put(key, new ServletHolder(value));
         }
 
         List<Element> mappings = root.elements("servlet-mapping");
@@ -68,6 +69,7 @@ public class ServletContext {
         for (Element mapping : mappings) {
             String key = mapping.element("url-pattern").getText();
             String value = mapping.element("servlet-name").getText();
+            log.info("Loaded Servlet:" + value + ". Mapped Url:" + key);
             this.mapping.put(key,value);
         }
     }
@@ -92,7 +94,24 @@ public class ServletContext {
     }
 
     public Servlet mapServlet(String url) {
-        Servlet servlet = this.servletMap.get(mapping.get(url));
-        return servlet == null ? new DefaultServlet() : servlet;
+        ServletHolder servletHolder = this.servletMap.get(mapping.get(url));
+        if (servletHolder == null) {
+            return new DefaultServlet();
+        }
+        if(servletHolder.getServlet()!=null){
+            return servletHolder.getServlet();
+        }
+        String servletClass = servletHolder.getServletClass();
+        try {
+            Servlet servlet = (Servlet) Class.forName(servletClass).newInstance();
+            servletHolder.setServlet(servlet);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return servletHolder.getServlet();
     }
 }
