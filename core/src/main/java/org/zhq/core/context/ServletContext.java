@@ -3,8 +3,11 @@ package org.zhq.core.context;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.springframework.util.AntPathMatcher;
+import org.zhq.core.context.holder.FilterHolder;
 import org.zhq.core.context.holder.ServletHolder;
 import org.zhq.core.cookie.Cookie;
+import org.zhq.core.filter.Filter;
 import org.zhq.core.response.Response;
 import org.zhq.core.servlet.Servlet;
 import org.zhq.core.servlet.impl.DefaultServlet;
@@ -16,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.zhq.core.constant.ContextConstant.JSESSIONID;
 
@@ -31,24 +35,30 @@ import static org.zhq.core.constant.ContextConstant.JSESSIONID;
 public class ServletContext {
 
     private Map<String, ServletHolder> servletMap;
-    private Map<String, String> mapping;
+    private Map<String, FilterHolder> filterMap;
+    private Map<String, String> servletMapping;
+    private Map<String, List<String>> filterMapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
     private IdleSessionCleaner idleSessionCleaner;
+    private AntPathMatcher matcher;
 
     public static final int DEFAULT_SESSION_TIMEOUT = 30;
 
      public ServletContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
          servletMap = new HashMap<>();
-         mapping = new HashMap<>();
+         filterMap = new HashMap<>();
+         servletMapping = new HashMap<>();
+         filterMapping = new HashMap<>();
          attributes = new ConcurrentHashMap<>();
          sessions = new ConcurrentHashMap<>();
+         matcher = new AntPathMatcher();
          idleSessionCleaner = new IdleSessionCleaner();
          idleSessionCleaner.start();
-         loadServletMap();
+         parseConfig();
     }
 
-    private void loadServletMap() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private void parseConfig() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         Document document = XMLUtil.getDocument(ServletContext.class.getResource("/WEB-INF/web.xml").getFile());
         if (document == null) {
             throw new IllegalStateException("/WEB-INF/web.xml 文件不存在");
@@ -57,6 +67,43 @@ public class ServletContext {
         if (root == null) {
             throw new IllegalStateException("/WEB-INF/web.xml 文件没有根结点");
         }
+        parseServletConfig(root);
+        parseFilterConfig(root);
+    }
+
+    private void parseFilterConfig(Element root) {
+        List<Element> filters = root.elements("filter");
+        if (filters == null || filters.size() == 0) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件没有filter结点");
+        }
+        for (Element filter : filters) {
+            String key = filter.element("filter-name").getText();
+            String value = filter.element("filter-class").getText();
+            filterMap.put(key, new FilterHolder(value));
+        }
+
+        List<Element> mappings = root.elements("filter-mapping");
+        if (mappings == null || mappings.size() == 0) {
+            throw new IllegalStateException("/WEB-INF/web.xml 文件没有filter-mapping结点");
+        }
+        for (Element mapping : mappings) {
+            List<Element> urlPatterns = mapping.elements("url-pattern");
+            String value = mapping.element("filter-name").getText();
+            StringJoiner stringJoiner = new StringJoiner(",");
+            for (Element urlPattern : urlPatterns) {
+                List<String> values = this.filterMapping.get(urlPattern.getText());
+                if (values == null) {
+                    values = new ArrayList<>();
+                    this.filterMapping.put(urlPattern.getText(), values);
+                }
+                values.add(value);
+                stringJoiner.add(urlPattern.getText());
+            }
+            log.info("Loaded Filter:" + value + ". Mapped Url:" + stringJoiner.toString());
+        }
+    }
+
+    private void parseServletConfig(Element root) {
         List<Element> servlets = root.elements("servlet");
         if (servlets == null || servlets.size() == 0) {
             throw new IllegalStateException("/WEB-INF/web.xml 文件没有servlet结点");
@@ -75,12 +122,12 @@ public class ServletContext {
             String key = mapping.element("url-pattern").getText();
             String value = mapping.element("servlet-name").getText();
             log.info("Loaded Servlet:" + value + ". Mapped Url:" + key);
-            this.mapping.put(key,value);
+            this.servletMapping.put(key, value);
         }
     }
 
     public Servlet mapServlet(String url) {
-        ServletHolder servletHolder = this.servletMap.get(mapping.get(url));
+        ServletHolder servletHolder = this.servletMap.get(servletMapping.get(url));
         if (servletHolder == null) {
             return new DefaultServlet();
         }
@@ -99,6 +146,47 @@ public class ServletContext {
             e.printStackTrace();
         }
         return servletHolder.getServlet();
+    }
+
+    public List<Filter> mapFilter(String url) {
+        List<String> matchingPatterns = new ArrayList<>();
+        Set<String> patterns = filterMapping.keySet();
+        for (String pattern : patterns) {
+            if (matcher.match(pattern, url)) {
+                matchingPatterns.add(pattern);
+            }
+        }
+
+        Set<String> filterAliases = matchingPatterns.stream().flatMap(pattern -> this.filterMapping.get(pattern).stream()).collect(Collectors.toSet());
+        List<Filter> result = new ArrayList<>();
+        for (String alias : filterAliases) {
+            Filter filter = initAndGetFilter(alias);
+            if (filter != null) {
+                result.add(filter);
+            }
+        }
+        return result;
+    }
+
+    private Filter initAndGetFilter(String filterAlias) {
+        FilterHolder filterHolder = filterMap.get(filterAlias);
+        if (filterHolder == null) {
+            return null;
+        }
+        if (filterHolder.getFilter() == null) {
+            try {
+                Filter filter = (Filter) Class.forName(filterHolder.getFilterClass()).newInstance();
+                filter.init();
+                filterHolder.setFilter(filter);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return filterHolder.getFilter();
     }
 
     public HttpSession getSession(String id) {

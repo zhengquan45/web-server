@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.zhq.core.constant.CharsetProperties;
 import org.zhq.core.cookie.Cookie;
 import org.zhq.core.enumeration.HTTPStatus;
+import org.zhq.core.network.handler.AbstractRequestHandler;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ import static org.zhq.core.constant.ContextConstant.*;
 @Data
 @Slf4j
 public class Response {
-
+    private AbstractRequestHandler requestHandler;
     private StringBuilder headerAppender;
     private StringBuilder bodyAppender;
     private List<Cookie> cookies;
@@ -89,6 +90,7 @@ public class Response {
         addHeader(new Header("Location", url));
         header(HTTPStatus.MOVED_TEMPORARILY);
         body(bodyAppender.toString().getBytes(CharsetProperties.UTF_8_CHARSET));
+        requestHandler.flushResponse();
     }
 
     public void addCookie(Cookie cookie) {
