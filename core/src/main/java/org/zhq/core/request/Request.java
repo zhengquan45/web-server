@@ -105,7 +105,6 @@ public class Request {
         }
         for (Cookie cookie : cookies) {
             if (cookie.getKey().equals("JSESSIONID")) {
-                log.info("servletContext:{}", servletContext);
                 HttpSession currentSession = servletContext.getSession(cookie.getValue());
                 if (currentSession != null) {
                     this.session = currentSession;

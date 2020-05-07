@@ -6,10 +6,6 @@ import org.zhq.core.response.Response;
 
 import java.io.IOException;
 
-/**
- * @author sinjinsong
- * @date 2018/5/2
- */
 public interface Servlet {
     void init();
 

@@ -9,12 +9,12 @@ import org.zhq.core.response.Response;
 import org.zhq.core.servlet.Servlet;
 import org.zhq.core.servlet.impl.DefaultServlet;
 import org.zhq.core.session.HttpSession;
+import org.zhq.core.session.IdleSessionCleaner;
 import org.zhq.core.util.XMLUtil;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.zhq.core.constant.ContextConstant.JSESSIONID;
@@ -34,13 +34,18 @@ public class ServletContext {
     private Map<String, String> mapping;
     private Map<String, Object> attributes;
     private Map<String, HttpSession> sessions;
+    private IdleSessionCleaner idleSessionCleaner;
+
+    public static final int DEFAULT_SESSION_TIMEOUT = 30;
 
      public ServletContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-        servletMap = new HashMap<>();
-        mapping = new HashMap<>();
-        attributes = new ConcurrentHashMap<>();
-        sessions = new ConcurrentHashMap<>();
-        loadServletMap();
+         servletMap = new HashMap<>();
+         mapping = new HashMap<>();
+         attributes = new ConcurrentHashMap<>();
+         sessions = new ConcurrentHashMap<>();
+         idleSessionCleaner = new IdleSessionCleaner();
+         idleSessionCleaner.start();
+         loadServletMap();
     }
 
     private void loadServletMap() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -74,25 +79,6 @@ public class ServletContext {
         }
     }
 
-    public HttpSession getSession(String id) {
-        return sessions.get(id);
-    }
-
-    public HttpSession createSession(Response response) {
-        HttpSession session = new HttpSession(UUID.randomUUID().toString().toUpperCase());
-        sessions.put(session.getId(),session);
-        response.addCookie(new Cookie(JSESSIONID,session.getId()));
-        return session;
-    }
-
-    public Object getAttribute(String key){
-        return attributes.get(key);
-    }
-
-    public void setAttributes(String key,Object value){
-        attributes.put(key,value);
-    }
-
     public Servlet mapServlet(String url) {
         ServletHolder servletHolder = this.servletMap.get(mapping.get(url));
         if (servletHolder == null) {
@@ -114,4 +100,44 @@ public class ServletContext {
         }
         return servletHolder.getServlet();
     }
+
+    public HttpSession getSession(String id) {
+        return sessions.get(id);
+    }
+
+    public HttpSession createSession(Response response) {
+        HttpSession session = new HttpSession(UUID.randomUUID().toString().toUpperCase());
+        sessions.put(session.getId(), session);
+        response.addCookie(new Cookie(JSESSIONID, session.getId()));
+        return session;
+    }
+
+    public void invalidateSession(HttpSession session) {
+        sessions.remove(session.getId());
+    }
+
+    //这里想了想不加锁了 同时操作同一个session的机会比较小,一个用户只有一个session,如果出现多个用户同时操作session的情况大概率也是攻击。
+    //且session这个数据如果操作过程中被过期机制删除就删除了 不影响业务
+    public void cleanIdleSessions() {
+        Set<String> keySet = sessions.keySet();
+        Iterator itr = keySet.iterator();
+        while (itr.hasNext()) {
+            HttpSession session = sessions.get(itr.next());
+            //按照默认的Session过期时间来进行清理闲置session
+            if (Duration.between(session.getLastAccessed(), Instant.now()).getSeconds() >= DEFAULT_SESSION_TIMEOUT) {
+                log.warn("session[" + session.getId() + "] 过期了");
+                itr.remove();
+            }
+        }
+    }
+
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttributes(String key, Object value) {
+        attributes.put(key, value);
+    }
+
 }
